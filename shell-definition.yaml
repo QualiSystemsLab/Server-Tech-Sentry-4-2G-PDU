@@ -51,7 +51,7 @@ node_types:
           User:
             type: string
           Password:
-            type: ccloudshell.datatypes.Password
+            type: cloudshell.datatypes.Password
           SNMP Version:
             type: string
             default: v2c
