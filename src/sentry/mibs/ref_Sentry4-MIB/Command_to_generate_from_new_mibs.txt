@@ -1,0 +1,2 @@
+py -2 mibdump.py --mib-source=./ --destination-directory=./ Sentry4-MIB
+

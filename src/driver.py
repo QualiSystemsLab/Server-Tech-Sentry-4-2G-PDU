@@ -52,8 +52,14 @@ class SentryPduDriver (ResourceDriverInterface):
         return handler.get_inventory()
 
     def PowerCycle(self, context, ports, delay):
+
         try:
-            float(delay)
+            if delay < 8:
+                s_delay = 8
+            else:
+                s_delay = delay
+
+            float(s_delay)
         except ValueError:
             raise Exception('Delay must be a numeric value')
 
@@ -65,7 +71,7 @@ class SentryPduDriver (ResourceDriverInterface):
                                self._decrypt_password(context, write)
                                )
 
-        return handler.power_cycle(ports, float(delay))
+        return handler.power_cycle(ports, float(delay), self._find_connected_to(context, ports))
 
     def PowerOff(self, context, ports):
         """
@@ -82,7 +88,7 @@ class SentryPduDriver (ResourceDriverInterface):
                                self._decrypt_password(context, write)
                                )
 
-        return handler.power_off(ports)
+        return handler.power_off(ports, self._find_connected_to(context, ports))
 
     def PowerOn(self, context, ports):
         """
@@ -97,10 +103,11 @@ class SentryPduDriver (ResourceDriverInterface):
         write = resource.snmp_write_community
         handler = PmPduHandler(context,
                                self._decrypt_password(context, read),
-                               self._decrypt_password(context, write)
+                               self._decrypt_password(context, write),
+
                                )
 
-        return handler.power_on(ports)
+        return handler.power_on(ports, self._find_connected_to(context, ports))
 
     def _decrypt_password(self, context, input):
         """
@@ -114,4 +121,19 @@ class SentryPduDriver (ResourceDriverInterface):
 
         return session.DecryptPassword(input).Value
 
+    def _find_connected_to(self, context, ports=[]):
+
+        session = cs_api.CloudShellAPISession(host=context.connectivity.server_address,
+                                              token_id=context.connectivity.admin_auth_token,
+                                              domain='Global')
+        dut_list = []
+
+        for port in ports:
+            res = session.FindResources(resourceModel='Sentry4G2Pdu.PowerSocket', resourceAddress=port).Resources
+            for r in res:
+                if port == r.FullAddress:
+                    con = session.GetResourceDetails(r.FullName).Connections
+                    for c in con:
+                        dut_list.append(c.FullPath.split('/')[-2])
+        return dut_list
 

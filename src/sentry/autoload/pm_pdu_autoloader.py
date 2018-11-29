@@ -35,14 +35,25 @@ class PmPduAutoloader:
         rv.attributes.append(self.makeattr('', 'CS_PDU.System Name', pdu_name))
 
         outlet_table = self.snmp_handler.get_table('Sentry4-MIB', 'st4OutletConfigTable')
+        n = 1  # part of modification to Naming for DELL
         for index, attribute in outlet_table.iteritems():
-            name = '%s_%s' % (self.snmp_handler.get_property('Sentry4-MIB', 'st4OutletID', index),
-                              self.snmp_handler.get_property('Sentry4-MIB', 'st4OutletName', index))
+            # name = '%s_%s' % (self.snmp_handler.get_property('Sentry4-MIB', 'st4OutletID', index),
+            #                   self.snmp_handler.get_property('Sentry4-MIB', 'st4OutletName', index))
+
+            # Modified naming per DELL request:
+            i, j, k = index.split('.')
+            name = 'Outlet_{num:02d}'.format(num=int(k) + ((int(i) - 1) * 30))  # assumes 30 outlets per unit max
+            n += 1
+            model_name = '%s_%s' % (self.snmp_handler.get_property('Sentry4-MIB', 'st4OutletID', index),
+                                    self.snmp_handler.get_property('Sentry4-MIB', 'st4OutletName', index))
+            # End Custom work ################
+
             relative_address = index
             unique_identifier = '%s.%s' % (pdu_name, index)
 
             rv.resources.append(self.makeres(name, 'Sentry4G2Pdu.PowerSocket', relative_address, unique_identifier))
-            rv.attributes.append(self.makeattr(relative_address, 'CS_PowerSocket.Model Name', attribute['st4OutletName']))
+            # rv.attributes.append(self.makeattr(relative_address, 'CS_PowerSocket.Model Name', attribute['st4OutletName']))
+            rv.attributes.append(self.makeattr(relative_address, 'CS_PowerSocket.Model Name', model_name))  # custom
 
         return rv
 
