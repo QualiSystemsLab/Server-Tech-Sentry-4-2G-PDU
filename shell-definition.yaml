@@ -2,8 +2,8 @@ tosca_definitions_version: tosca_simple_yaml_1_0
 
 metadata:
   template_name: Sentry4G2Pdu
-  template_author: ksaper, updated by tims
-  template_version: 1.2.2
+  template_author: ksaper, upd. tim.s@quali.com
+  template_version: 1.2.3
   template_icon: shell-icon.png
 
 description: >

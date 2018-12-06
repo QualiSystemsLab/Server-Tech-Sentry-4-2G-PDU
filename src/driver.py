@@ -137,3 +137,29 @@ class SentryPduDriver (ResourceDriverInterface):
                         dut_list.append(c.FullPath.split('/')[-2])
         return dut_list
 
+if __name__ == "__main__":
+    import mock
+    from cloudshell.shell.core.driver_context import CancellationContext
+    shell_name = "Sentry4G2Pdu"
+
+    cancellation_context = mock.create_autospec(CancellationContext)
+    context = mock.create_autospec(ResourceCommandContext)
+    context.resource = mock.MagicMock()
+    context.reservation = mock.MagicMock()
+    context.connectivity = mock.MagicMock()
+    context.reservation.reservation_id = "<Reservation ID>"
+#    context.resource.address = "10.11.100.251"  # Sentry 4
+    context.resource.address = "10.16.145.249"  # Sentry 3
+    context.resource.name = "Debug_Sentry4"
+    context.resource.attributes = dict()
+    context.resource.attributes["{}.User".format(shell_name)] = "admn"
+    context.resource.attributes["{}.Password".format(shell_name)] = "admn"
+    context.resource.attributes["{}.SNMP Read Community".format(shell_name)] = "public"
+    context.resource.attributes["{}.SNMP Write Community".format(shell_name)] = "private"
+
+    driver = SentryPduDriver()
+    # print driver.run_custom_command(context, custom_command="sh run", cancellation_context=cancellation_context)
+    driver.initialize(context)
+    result = driver.get_inventory(context)
+
+    print "done"
